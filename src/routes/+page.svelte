@@ -84,9 +84,7 @@
   </div>
 </main>
 
-{#if brief.open}
-  <Diaporama />
-{/if}
+<Diaporama />
 
 {#if reader.open}
   <Reader />

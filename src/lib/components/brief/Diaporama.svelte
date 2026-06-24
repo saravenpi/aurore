@@ -42,6 +42,8 @@
   let now = $state(timeLabel());
 
   $effect(() => {
+    if (!brief.open) return;
+    now = timeLabel();
     const id = setInterval(() => {
       now = timeLabel();
     }, 1000);
@@ -71,7 +73,7 @@
 
 <svelte:window onkeydown={onKeydown} />
 
-{#if current}
+{#if brief.open}
   <div class="scrim" transition:fade={{ duration: 340 }}></div>
   <div
     class="diaporama"
