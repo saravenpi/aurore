@@ -208,7 +208,8 @@
     display: flex;
     gap: 10px;
     width: 100%;
-    overflow-x: auto;
+    justify-content: center;
+    flex-wrap: wrap;
     padding: 4px 2px;
   }
 

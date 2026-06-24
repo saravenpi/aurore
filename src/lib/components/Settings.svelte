@@ -351,7 +351,6 @@
     padding: 18px;
     border-radius: var(--r-lg);
     background: rgba(255, 255, 255, 0.42);
-    border: 1px solid var(--hair);
   }
 
   .block-head {
