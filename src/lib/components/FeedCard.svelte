@@ -3,7 +3,6 @@
   import { relativeTime } from "$lib/time";
   import { reader } from "$lib/reader.svelte";
   import SourceChip from "./SourceChip.svelte";
-  import ArrowUp from "~icons/solar/arrow-right-up-bold";
 
   let { item }: { item: FeedItem } = $props();
 
@@ -62,11 +61,6 @@
     </div>
   {/if}
 
-  {#if clickable && !showImage}
-    <span class="ext" aria-hidden="true">
-      <ArrowUp style="font-size:16px" />
-    </span>
-  {/if}
 </div>
 
 <style>
@@ -172,28 +166,4 @@
     display: block;
   }
 
-  .ext {
-    position: absolute;
-    top: 14px;
-    right: 14px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 28px;
-    height: 28px;
-    border-radius: var(--r-pill);
-    background: var(--accent-soft);
-    color: var(--accent-ink);
-    opacity: 0;
-    transform: translateY(4px);
-    transition:
-      opacity 0.3s var(--ease-soft),
-      transform 0.3s var(--ease-soft);
-    pointer-events: none;
-  }
-
-  .card.clickable:hover .ext {
-    opacity: 1;
-    transform: translateY(0);
-  }
 </style>

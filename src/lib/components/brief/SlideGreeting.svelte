@@ -20,7 +20,7 @@
   </div>
 
   <h1 in:fly={{ y: 26, duration: 520, delay: 180, easing: cubicOut }}>
-    {hello}{#if name}<span class="name"> {name}</span>{/if}
+    {hello}{#if name}{" "}<span class="name">{name}</span>{/if}
   </h1>
 
   <p class="date" in:fly={{ y: 22, duration: 520, delay: 300, easing: cubicOut }}>
