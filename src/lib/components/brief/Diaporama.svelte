@@ -111,7 +111,7 @@
           in:fly={{ x: 80, duration: 460, easing: cubicOut }}
           out:fly={{ x: -80, duration: 320, easing: cubicOut }}
         >
-          {#if Active}
+          {#if Active && current}
             <Active slide={current} />
           {/if}
         </div>
