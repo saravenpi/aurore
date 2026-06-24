@@ -22,6 +22,7 @@ notify = "6"
 dirs = "5"
 tauri-plugin-notification = "2"
 reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+futures = "0.3"
 feed-rs = "2"
 chrono = { version = "0.4", features = ["serde"] }
 imap = "2"

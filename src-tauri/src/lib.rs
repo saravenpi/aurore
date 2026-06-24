@@ -3,6 +3,7 @@ use serde_json::Value;
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::{Mutex, OnceLock};
+use std::time::Duration;
 use notify::Watcher;
 use tauri::Emitter;
 
@@ -193,6 +194,8 @@ fn read_config_if_changed() -> Option<Config> {
 fn client() -> Result<reqwest::Client, String> {
     reqwest::Client::builder()
         .user_agent("Aurore/0.1")
+        .timeout(Duration::from_secs(15))
+        .connect_timeout(Duration::from_secs(6))
         .build()
         .map_err(|e| e.to_string())
 }
@@ -241,7 +244,13 @@ async fn resolve_feed_url(cl: &reqwest::Client, url: &str) -> String {
     if let Some(hit) = yt_cache().lock().ok().and_then(|m| m.get(url).cloned()) {
         return hit;
     }
-    let html = match cl.get(url).send().await {
+    let html = match cl
+        .get(url)
+        .header("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15")
+        .header("Cookie", "CONSENT=YES+1; SOCS=CAI")
+        .send()
+        .await
+    {
         Ok(r) => r.text().await.unwrap_or_default(),
         Err(_) => return url.to_string(),
     };
@@ -399,78 +408,80 @@ async fn fetch_weather(lat: f64, lon: f64, auto: bool) -> Result<Weather, String
     })
 }
 
+async fn fetch_one_feed(cl: &reqwest::Client, source: &FeedSourceConfig) -> Vec<FeedItem> {
+    let url = resolve_feed_url(cl, &source.url).await;
+    let resp = match cl.get(&url).send().await {
+        Ok(r) => r,
+        Err(_) => return Vec::new(),
+    };
+    let bytes = match resp.bytes().await {
+        Ok(b) => b,
+        Err(_) => return Vec::new(),
+    };
+    let feed = match feed_rs::parser::parse(&bytes[..]) {
+        Ok(f) => f,
+        Err(_) => return Vec::new(),
+    };
+    let feed_title = feed
+        .title
+        .as_ref()
+        .map(|t| t.content.clone())
+        .unwrap_or_default();
+    let source_name = if source.name.is_empty() {
+        feed_title
+    } else {
+        source.name.clone()
+    };
+    let mut items = Vec::new();
+    for entry in feed.entries.into_iter().take(20) {
+        let title = entry
+            .title
+            .as_ref()
+            .map(|t| t.content.trim().to_string())
+            .unwrap_or_default();
+        let raw_summary = entry
+            .summary
+            .as_ref()
+            .map(|s| s.content.clone())
+            .or_else(|| entry.content.as_ref().and_then(|c| c.body.clone()))
+            .unwrap_or_default();
+        let summary = strip_html(&raw_summary);
+        let link = entry.links.first().map(|l| l.href.clone());
+        let author = entry.authors.first().map(|a| a.name.clone());
+        let image = entry
+            .media
+            .iter()
+            .flat_map(|m| m.content.iter())
+            .find_map(|c| c.url.as_ref().map(|u| u.to_string()));
+        let published = entry.published.or(entry.updated).map(|d| d.to_rfc3339());
+        let id = if entry.id.is_empty() {
+            link.clone().unwrap_or_else(|| title.clone())
+        } else {
+            entry.id.clone()
+        };
+        items.push(FeedItem {
+            id,
+            source: "rss".into(),
+            source_name: source_name.clone(),
+            title,
+            summary,
+            link,
+            author,
+            image,
+            published,
+            unread: false,
+        });
+    }
+    items
+}
+
 #[tauri::command]
 async fn fetch_feeds(sources: Vec<FeedSourceConfig>) -> Result<Vec<FeedItem>, String> {
     let cl = client()?;
-    let mut items: Vec<FeedItem> = Vec::new();
-    for source in sources.into_iter().filter(|s| s.enabled) {
-        let url = resolve_feed_url(&cl, &source.url).await;
-        let resp = match cl.get(&url).send().await {
-            Ok(r) => r,
-            Err(_) => continue,
-        };
-        let bytes = match resp.bytes().await {
-            Ok(b) => b,
-            Err(_) => continue,
-        };
-        let feed = match feed_rs::parser::parse(&bytes[..]) {
-            Ok(f) => f,
-            Err(_) => continue,
-        };
-        let feed_title = feed
-            .title
-            .as_ref()
-            .map(|t| t.content.clone())
-            .unwrap_or_default();
-        let source_name = if source.name.is_empty() {
-            feed_title
-        } else {
-            source.name.clone()
-        };
-        for entry in feed.entries.into_iter().take(20) {
-            let title = entry
-                .title
-                .as_ref()
-                .map(|t| t.content.trim().to_string())
-                .unwrap_or_default();
-            let raw_summary = entry
-                .summary
-                .as_ref()
-                .map(|s| s.content.clone())
-                .or_else(|| entry.content.as_ref().and_then(|c| c.body.clone()))
-                .unwrap_or_default();
-            let summary = strip_html(&raw_summary);
-            let link = entry.links.first().map(|l| l.href.clone());
-            let author = entry.authors.first().map(|a| a.name.clone());
-            let image = entry
-                .media
-                .iter()
-                .flat_map(|m| m.content.iter())
-                .find_map(|c| c.url.as_ref().map(|u| u.to_string()));
-            let published = entry
-                .published
-                .or(entry.updated)
-                .map(|d| d.to_rfc3339());
-            let id = if entry.id.is_empty() {
-                link.clone().unwrap_or_else(|| title.clone())
-            } else {
-                entry.id.clone()
-            };
-            items.push(FeedItem {
-                id,
-                source: "rss".into(),
-                source_name: source_name.clone(),
-                title,
-                summary,
-                link,
-                author,
-                image,
-                published,
-                unread: false,
-            });
-        }
-    }
-    Ok(items)
+    let enabled: Vec<FeedSourceConfig> = sources.into_iter().filter(|s| s.enabled).collect();
+    let futs = enabled.iter().map(|s| fetch_one_feed(&cl, s));
+    let results = futures::future::join_all(futs).await;
+    Ok(results.into_iter().flatten().collect())
 }
 
 #[tauri::command]

@@ -65,8 +65,6 @@ class BriefStore {
   stop() {
     this.pause();
     this.open = false;
-    this.index = 0;
-    this.progress = 0;
   }
 
   play() {

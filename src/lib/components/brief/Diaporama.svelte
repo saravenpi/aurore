@@ -2,8 +2,18 @@
   import { fly, fade, scale } from "svelte/transition";
   import { cubicOut } from "svelte/easing";
   import { brief } from "$lib/brief.svelte";
-  import { timeLabel } from "$lib/time";
+  import { feed } from "$lib/feed.svelte";
+  import { config } from "$lib/config.svelte";
+  import { voice } from "$lib/voice.svelte";
+  import {
+    timeLabel,
+    greeting,
+    briefMoment,
+    weatherLabel,
+  } from "$lib/time";
+  import type { Slide } from "$lib/types";
 
+  import Mascot from "$lib/components/Mascot.svelte";
   import SlideGreeting from "./SlideGreeting.svelte";
   import SlideWeather from "./SlideWeather.svelte";
   import SlideNews from "./SlideNews.svelte";
@@ -11,12 +21,13 @@
   import SlideNotifications from "./SlideNotifications.svelte";
   import SlideOutro from "./SlideOutro.svelte";
 
-  import Sunrise from "~icons/solar/sunrise-bold-duotone";
   import ArrowLeft from "~icons/lucide/chevron-left";
   import ArrowRight from "~icons/lucide/chevron-right";
   import Play from "~icons/lucide/play";
   import Pause from "~icons/lucide/pause";
   import Close from "~icons/lucide/x";
+  import VolumeOn from "~icons/lucide/volume-2";
+  import VolumeOff from "~icons/lucide/volume-x";
 
   const slideComponents = {
     greeting: SlideGreeting,
@@ -37,6 +48,43 @@
       now = timeLabel();
     }, 1000);
     return () => clearInterval(id);
+  });
+
+  function narrate(slide: Slide): string {
+    const name = config.data.brief.greetingName.trim();
+    switch (slide.kind) {
+      case "greeting":
+        return `${greeting()}${name ? " " + name : ""}. Voici votre brief ${briefMoment()}.`;
+      case "weather":
+        if (feed.weather) {
+          const w = feed.weather;
+          return `À ${w.place || "votre position"}, il fait ${Math.round(w.now.tempC)} degrés, ${weatherLabel(w.now.code)}.`;
+        }
+        return "Météo indisponible pour le moment.";
+      case "news": {
+        const titles = (slide.items ?? []).map((i) => i.title).join(". ");
+        return `À la une. ${titles}`;
+      }
+      case "emails": {
+        const n = (slide.items ?? []).length;
+        return `Vous avez ${n} message${n > 1 ? "s" : ""} non lu${n > 1 ? "s" : ""}.`;
+      }
+      case "notifications": {
+        const n = (slide.items ?? []).length;
+        return `${n} notification${n > 1 ? "s" : ""} à découvrir.`;
+      }
+      case "outro":
+        return "Bonne journée !";
+    }
+  }
+
+  $effect(() => {
+    const slide = brief.current;
+    if (brief.open && slide) voice.speak(narrate(slide));
+  });
+
+  $effect(() => {
+    return () => voice.stop();
   });
 
   function segmentFill(i: number): number {
@@ -81,16 +129,16 @@
       </div>
 
       <header class="head">
-        <div class="brand">
-          <Sunrise style="font-size:18px" />
-          <span>Aurore</span>
-        </div>
         <span class="clock">{now}</span>
       </header>
     </div>
 
     <button class="zone zone-prev" aria-label="Précédent" onclick={() => brief.prev()}></button>
     <button class="zone zone-next" aria-label="Suivant" onclick={() => brief.next()}></button>
+
+    <div class="avatar">
+      <Mascot speaking={voice.speaking} level={voice.level} />
+    </div>
 
     <div class="stage">
       {#key brief.index}
@@ -120,6 +168,17 @@
       <button class="ctrl" aria-label="Suivant" onclick={() => brief.next()}>
         <ArrowRight style="font-size:22px" />
       </button>
+      <button
+        class="ctrl"
+        aria-label={voice.muted ? "Activer la voix" : "Couper la voix"}
+        onclick={() => voice.toggleMute()}
+      >
+        {#if voice.muted}
+          <VolumeOff style="font-size:20px" />
+        {:else}
+          <VolumeOn style="font-size:20px" />
+        {/if}
+      </button>
       <button class="ctrl close" aria-label="Fermer" onclick={() => brief.stop()}>
         <Close style="font-size:20px" />
       </button>
@@ -142,18 +201,18 @@
     left: 0;
     right: 0;
     z-index: 30;
-    padding: 30px 22px 0;
+    padding: 52px 24px 0;
     pointer-events: none;
   }
 
   .bars {
     display: flex;
-    gap: 6px;
+    gap: 8px;
   }
 
   .bar-track {
     flex: 1;
-    height: 3.5px;
+    height: 6px;
     border-radius: var(--r-pill);
     background: var(--hair);
     overflow: hidden;
@@ -173,29 +232,17 @@
   .head {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    margin-top: 12px;
+    justify-content: flex-end;
+    margin-top: 16px;
     padding: 0 4px;
   }
 
-  .brand {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    font-size: 14px;
-    font-weight: 500;
-    letter-spacing: 0.01em;
-    color: var(--ink);
-  }
-
-  .brand :global(svg) {
-    color: var(--accent);
-  }
-
   .clock {
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--ink-soft);
+    font-size: 30px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
   }
 
   .zone {
@@ -216,6 +263,15 @@
   .zone-next {
     left: 30%;
     width: 70%;
+  }
+
+  .avatar {
+    position: absolute;
+    left: 24px;
+    bottom: 26px;
+    z-index: 35;
+    width: 210px;
+    pointer-events: none;
   }
 
   .stage {
