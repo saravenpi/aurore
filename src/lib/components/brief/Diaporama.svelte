@@ -1,6 +1,15 @@
 <script lang="ts">
-  import { fly, scale } from "svelte/transition";
+  import { fly } from "svelte/transition";
   import { cubicOut } from "svelte/easing";
+
+  function sheetUp(_node: Element, { duration = 520 }: { duration?: number }) {
+    return {
+      duration,
+      easing: cubicOut,
+      css: (t: number) =>
+        `transform: translateY(${(1 - t) * 100}%); border-radius: ${(1 - t) * 30}px ${(1 - t) * 30}px 0 0;`,
+    };
+  }
   import { brief } from "$lib/brief.svelte";
   import { timeLabel } from "$lib/time";
 
@@ -65,7 +74,7 @@
 {#if current}
   <div
     class="diaporama"
-    transition:scale={{ duration: 420, start: 0.96, opacity: 0, easing: cubicOut }}
+    transition:sheetUp={{ duration: 520 }}
   >
     <div class="top-ui">
       <div class="bars">
