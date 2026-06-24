@@ -1,65 +1,43 @@
 <script lang="ts">
-  import PlayCircle from "~icons/solar/play-circle-bold-duotone";
+  import Play from "~icons/solar/play-circle-bold-duotone";
 
   let { onplay }: { onplay: () => void } = $props();
 </script>
 
-<button class="cta" onclick={onplay}>
-  <span class="icon">
-    <PlayCircle style="font-size:38px" />
-  </span>
-  <span class="text">
-    <span class="label">Lancer le brief</span>
-    <span class="sub">Votre résumé du matin</span>
-  </span>
+<button class="cta liquid-glass" onclick={onplay}>
+  <Play style="font-size:22px" />
+  <span class="label">Lancer le brief</span>
 </button>
 
 <style>
   .cta {
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: 16px;
-    width: 100%;
-    min-height: 64px;
-    padding: 12px 26px;
+    gap: 9px;
+    height: 44px;
+    padding: 0 20px 0 16px;
     border-radius: var(--r-pill);
-    background: var(--dawn-amber);
-    color: #fff;
-    text-align: left;
-    transition:
-      transform 0.35s var(--ease-soft),
-      filter 0.35s var(--ease-soft);
+    color: var(--ink);
+    font-family: "Goga", sans-serif;
+    font-weight: 700;
+    font-size: 0.95rem;
+    white-space: nowrap;
+    transition: transform 0.3s var(--ease-soft);
+  }
+
+  .cta :global(svg) {
+    color: var(--accent);
   }
 
   .cta:hover {
-    transform: scale(1.03);
-    filter: brightness(1.04);
+    transform: scale(1.04);
   }
 
   .cta:active {
     transform: scale(0.97);
   }
 
-  .icon {
-    display: inline-flex;
-    align-items: center;
-  }
-
-  .text {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-  }
-
   .label {
-    font-family: "Goga", sans-serif;
-    font-weight: 700;
-    font-size: 1.15rem;
-    line-height: 1.1;
-  }
-
-  .sub {
-    font-size: 0.82rem;
-    opacity: 0.85;
+    letter-spacing: -0.01em;
   }
 </style>

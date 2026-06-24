@@ -1,9 +1,18 @@
 <script lang="ts">
+  import { goto } from "$app/navigation";
   import { feed } from "$lib/feed.svelte";
+  import { timeLabel } from "$lib/time";
   import Refresh from "~icons/solar/refresh-bold-duotone";
   import Settings from "~icons/solar/settings-minimalistic-bold-duotone";
+  import Heart from "~icons/solar/heart-bold-duotone";
 
   let { onsettings }: { onsettings: () => void } = $props();
+
+  let now = $state(timeLabel());
+  $effect(() => {
+    const id = setInterval(() => (now = timeLabel()), 1000);
+    return () => clearInterval(id);
+  });
 
   function refresh() {
     if (!feed.loading) feed.refresh();
@@ -13,6 +22,7 @@
 <div class="dragstrip" data-tauri-drag-region></div>
 
 <div class="floating">
+  <span class="clock liquid-glass">{now}</span>
   <button
     class="iconbtn liquid-glass"
     onclick={refresh}
@@ -30,6 +40,14 @@
     title="Réglages"
   >
     <Settings style="font-size:20px" />
+  </button>
+  <button
+    class="iconbtn liquid-glass"
+    onclick={() => goto("/likes")}
+    aria-label="Articles aimés"
+    title="Articles aimés"
+  >
+    <Heart style="font-size:20px" />
   </button>
 </div>
 
@@ -51,6 +69,18 @@
     display: flex;
     align-items: center;
     gap: 10px;
+  }
+
+  .clock {
+    display: inline-flex;
+    align-items: center;
+    height: 40px;
+    padding: 0 16px;
+    border-radius: var(--r-pill);
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
   }
 
   .iconbtn {

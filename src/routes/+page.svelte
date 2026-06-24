@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { fly, fade } from "svelte/transition";
+  import { fly } from "svelte/transition";
   import { cubicOut } from "svelte/easing";
   import {
     isPermissionGranted,
@@ -10,6 +10,8 @@
   import { feed } from "$lib/feed.svelte";
   import { brief } from "$lib/brief.svelte";
   import { reader } from "$lib/reader.svelte";
+  import { library } from "$lib/library.svelte";
+  import { reveal } from "$lib/reveal";
   import { greeting, longDateLabel } from "$lib/time";
   import TitleBar from "$lib/components/TitleBar.svelte";
   import WeatherWidget from "$lib/components/WeatherWidget.svelte";
@@ -26,8 +28,11 @@
   onMount(() => {
     config.onExternalChange = () => feed.refresh();
     (async () => {
-      await config.init();
-      await feed.refresh();
+      if (!library.loaded) await library.load();
+      if (feed.lastUpdated === null) {
+        await config.init();
+        await feed.refresh();
+      }
       if (!(await isPermissionGranted())) await requestPermission();
     })();
     const t = setInterval(() => (now = new Date()), 30_000);
@@ -44,16 +49,16 @@
 
 <TitleBar onsettings={() => (settingsOpen = true)} />
 
+<div class="brief-fab">
+  <PlayBriefButton onplay={() => brief.start()} />
+</div>
+
 <main class="scroll">
   <div class="page">
     <header class="hero" in:fly={{ y: 16, duration: 520, easing: cubicOut }}>
       <p class="greet">{greeting(now)}{config.data.brief.greetingName ? ` ${config.data.brief.greetingName}` : ""}.</p>
       <p class="date">{longDateLabel(now)}</p>
     </header>
-
-    <div class="cta" in:fly={{ y: 18, duration: 560, delay: 60, easing: cubicOut }}>
-      <PlayBriefButton onplay={() => brief.start()} />
-    </div>
 
     <div class="weather" in:fly={{ y: 18, duration: 560, delay: 120, easing: cubicOut }}>
       <WeatherWidget />
@@ -66,8 +71,8 @@
         <EmptyState loading={feed.loading} />
       {:else if hasItems}
         <div class="grid">
-          {#each feed.items as item, i (item.id)}
-            <div in:fade={{ duration: 320, delay: Math.min(i * 24, 360) }}>
+          {#each feed.items as item (item.id)}
+            <div use:reveal>
               <FeedCard {item} />
             </div>
           {/each}
@@ -122,8 +127,12 @@
     font-weight: 500;
   }
 
-  .cta {
-    margin-bottom: 18px;
+  .brief-fab {
+    position: fixed;
+    top: 11px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 30;
   }
   .weather {
     margin-bottom: 30px;
@@ -140,7 +149,7 @@
   .grid {
     display: flex;
     flex-direction: column;
-    gap: 14px;
+    gap: 22px;
   }
   .grid > div {
     display: flex;

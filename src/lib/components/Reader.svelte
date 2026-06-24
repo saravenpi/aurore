@@ -1,5 +1,6 @@
 <script lang="ts">
   import { reader } from "$lib/reader.svelte";
+  import { library } from "$lib/library.svelte";
   import { relativeTime } from "$lib/time";
   import { openUrl } from "@tauri-apps/plugin-opener";
   import { fade, scale } from "svelte/transition";
@@ -8,6 +9,10 @@
   import ExternalLink from "~icons/lucide/external-link";
   import LoaderCircle from "~icons/lucide/loader-circle";
   import BookOpen from "~icons/lucide/book-open";
+  import HeartFilled from "~icons/solar/heart-bold";
+  import HeartOutline from "~icons/solar/heart-linear";
+
+  const liked = $derived(reader.item ? library.isLiked(reader.item.id) : false);
 
   const sourceLabel = $derived(
     reader.article?.siteName ?? reader.item?.sourceName ?? "",
@@ -47,6 +52,21 @@
     <div class="bar">
       <span class="bar-source">{sourceLabel}</span>
       <div class="bar-actions">
+        {#if reader.item}
+          <button
+            class="icon liquid-glass"
+            class:liked
+            aria-label={liked ? "Retirer des aimés" : "Aimer"}
+            title={liked ? "Retirer des aimés" : "Aimer"}
+            onclick={() => reader.item && library.toggleLike(reader.item)}
+          >
+            {#if liked}
+              <HeartFilled style="font-size:18px" />
+            {:else}
+              <HeartOutline style="font-size:18px" />
+            {/if}
+          </button>
+        {/if}
         {#if reader.item?.link}
           <button
             class="icon liquid-glass"
@@ -148,7 +168,6 @@
     justify-content: space-between;
     gap: 12px;
     padding: 14px 18px;
-    border-bottom: 1px solid var(--hair);
   }
 
   .bar-source {
@@ -183,6 +202,10 @@
   .icon:hover {
     transform: scale(1.06);
     color: var(--accent-ink);
+  }
+
+  .icon.liked {
+    color: var(--accent);
   }
 
   .body {

@@ -149,9 +149,41 @@ struct Config {
     brief: BriefConfig,
 }
 
+#[derive(Serialize, Deserialize, Clone, Default)]
+#[serde(rename_all = "camelCase", default)]
+struct LibraryState {
+    seen: Vec<String>,
+    likes: Vec<FeedItem>,
+}
+
 fn config_path() -> Result<PathBuf, String> {
     let dir = dirs::home_dir().ok_or_else(|| "no home dir".to_string())?;
     Ok(dir.join(".aurore.yml"))
+}
+
+fn state_path() -> Result<PathBuf, String> {
+    let dir = dirs::config_dir().ok_or_else(|| "no config dir".to_string())?;
+    Ok(dir.join("aurore").join("state.json"))
+}
+
+#[tauri::command]
+fn load_state() -> Result<LibraryState, String> {
+    let path = state_path()?;
+    if !path.exists() {
+        return Ok(LibraryState::default());
+    }
+    let data = std::fs::read_to_string(&path).map_err(|e| e.to_string())?;
+    serde_json::from_str(&data).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn save_state(state: LibraryState) -> Result<(), String> {
+    let path = state_path()?;
+    if let Some(parent) = path.parent() {
+        std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
+    }
+    let data = serde_json::to_string(&state).map_err(|e| e.to_string())?;
+    std::fs::write(&path, data).map_err(|e| e.to_string())
 }
 
 fn last_seen() -> &'static Mutex<String> {
@@ -727,7 +759,9 @@ pub fn run() {
             fetch_feeds,
             fetch_emails,
             fetch_notifications,
-            fetch_url
+            fetch_url,
+            load_state,
+            save_state
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
