@@ -12,11 +12,11 @@
   import SlideOutro from "./SlideOutro.svelte";
 
   import Sunrise from "~icons/solar/sunrise-bold-duotone";
-  import ArrowLeft from "~icons/solar/alt-arrow-left-bold-duotone";
-  import ArrowRight from "~icons/solar/alt-arrow-right-bold-duotone";
-  import Play from "~icons/solar/play-bold";
-  import Pause from "~icons/solar/pause-bold";
-  import CloseCircle from "~icons/solar/close-circle-bold-duotone";
+  import ArrowLeft from "~icons/lucide/chevron-left";
+  import ArrowRight from "~icons/lucide/chevron-right";
+  import Play from "~icons/lucide/play";
+  import Pause from "~icons/lucide/pause";
+  import Close from "~icons/lucide/x";
 
   const slideComponents = {
     greeting: SlideGreeting,
@@ -67,9 +67,6 @@
     class="diaporama"
     transition:scale={{ duration: 420, start: 0.96, opacity: 0, easing: cubicOut }}
   >
-    <div class="sky"></div>
-    <div class="sun-glow"></div>
-
     <div class="top-ui">
       <div class="bars">
         {#each Array(brief.count) as _, i}
@@ -109,22 +106,22 @@
       {/key}
     </div>
 
-    <div class="controls liquid-glass-dark" role="toolbar" aria-label="Contrôles du diaporama">
+    <div class="controls liquid-glass" role="toolbar" aria-label="Contrôles du diaporama">
       <button class="ctrl" aria-label="Précédent" onclick={() => brief.prev()}>
-        <ArrowLeft style="font-size:24px" />
+        <ArrowLeft style="font-size:22px" />
       </button>
       <button class="ctrl play" aria-label={brief.playing ? "Pause" : "Lecture"} onclick={() => brief.toggle()}>
         {#if brief.playing}
-          <Pause style="font-size:22px" />
+          <Pause style="font-size:20px" />
         {:else}
-          <Play style="font-size:22px" />
+          <Play style="font-size:20px" />
         {/if}
       </button>
       <button class="ctrl" aria-label="Suivant" onclick={() => brief.next()}>
-        <ArrowRight style="font-size:24px" />
+        <ArrowRight style="font-size:22px" />
       </button>
       <button class="ctrl close" aria-label="Fermer" onclick={() => brief.stop()}>
-        <CloseCircle style="font-size:24px" />
+        <Close style="font-size:20px" />
       </button>
     </div>
   </div>
@@ -136,31 +133,7 @@
     inset: 0;
     z-index: 100;
     overflow: hidden;
-  }
-
-  .sky {
-    position: absolute;
-    inset: 0;
-    background: var(--sky-dawn);
-  }
-
-  .sun-glow {
-    position: absolute;
-    top: 8%;
-    left: 50%;
-    width: 70vmax;
-    height: 70vmax;
-    transform: translateX(-50%);
-    border-radius: var(--r-pill);
-    background: radial-gradient(
-      circle,
-      rgba(255, 224, 122, 0.28) 0%,
-      rgba(255, 182, 56, 0.14) 38%,
-      rgba(255, 141, 107, 0) 66%
-    );
-    filter: blur(20px);
-    animation: float-soft 12s var(--ease-soft) infinite;
-    pointer-events: none;
+    background: var(--paper);
   }
 
   .top-ui {
@@ -182,14 +155,14 @@
     flex: 1;
     height: 3.5px;
     border-radius: var(--r-pill);
-    background: rgba(255, 255, 255, 0.24);
+    background: var(--hair);
     overflow: hidden;
   }
 
   .bar-fill {
     height: 100%;
     border-radius: var(--r-pill);
-    background: #fff;
+    background: var(--accent);
     transition: width 0.12s linear;
   }
 
@@ -212,13 +185,17 @@
     font-size: 14px;
     font-weight: 500;
     letter-spacing: 0.01em;
-    color: rgba(255, 255, 255, 0.78);
+    color: var(--ink);
+  }
+
+  .brand :global(svg) {
+    color: var(--accent);
   }
 
   .clock {
     font-size: 14px;
     font-weight: 500;
-    color: rgba(255, 255, 255, 0.7);
+    color: var(--ink-soft);
   }
 
   .zone {
@@ -281,30 +258,31 @@
     width: 48px;
     height: 48px;
     border-radius: var(--r-pill);
-    color: #fff;
+    color: var(--ink);
     transition:
       transform 0.22s var(--ease-soft),
       background 0.22s var(--ease-soft);
   }
 
   .ctrl:hover {
-    transform: translateY(-2px);
-    background: rgba(255, 255, 255, 0.16);
+    transform: scale(1.08);
+    background: var(--accent-soft);
   }
 
   .ctrl:active {
-    transform: translateY(0);
+    transform: scale(0.97);
   }
 
   .ctrl.play {
-    background: rgba(255, 255, 255, 0.18);
+    background: var(--accent-soft);
+    color: var(--accent-ink);
   }
 
   .ctrl.play:hover {
-    background: rgba(255, 255, 255, 0.28);
+    background: var(--accent-soft);
   }
 
   .ctrl.close {
-    color: rgba(255, 255, 255, 0.82);
+    color: var(--ink-soft);
   }
 </style>

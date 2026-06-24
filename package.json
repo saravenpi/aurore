@@ -13,10 +13,14 @@
   },
   "license": "MIT",
   "dependencies": {
+    "@mozilla/readability": "^0.6.0",
     "@tauri-apps/api": "^2",
-    "@tauri-apps/plugin-opener": "^2"
+    "@tauri-apps/plugin-notification": "^2.3.3",
+    "@tauri-apps/plugin-opener": "^2",
+    "dompurify": "^3.4.11"
   },
   "devDependencies": {
+    "@iconify-json/lucide": "^1.2.114",
     "@iconify-json/solar": "^1.2.2",
     "@sveltejs/adapter-static": "^3.0.6",
     "@sveltejs/kit": "^2.9.0",

@@ -2,9 +2,14 @@
   import { onMount } from "svelte";
   import { fly, fade } from "svelte/transition";
   import { cubicOut } from "svelte/easing";
+  import {
+    isPermissionGranted,
+    requestPermission,
+  } from "@tauri-apps/plugin-notification";
   import { config } from "$lib/config.svelte";
   import { feed } from "$lib/feed.svelte";
   import { brief } from "$lib/brief.svelte";
+  import { reader } from "$lib/reader.svelte";
   import { greeting, longDateLabel } from "$lib/time";
   import TitleBar from "$lib/components/TitleBar.svelte";
   import WeatherWidget from "$lib/components/WeatherWidget.svelte";
@@ -12,15 +17,18 @@
   import FeedCard from "$lib/components/FeedCard.svelte";
   import EmptyState from "$lib/components/EmptyState.svelte";
   import Settings from "$lib/components/Settings.svelte";
+  import Reader from "$lib/components/Reader.svelte";
   import Diaporama from "$lib/components/brief/Diaporama.svelte";
 
   let settingsOpen = $state(false);
   let now = $state(new Date());
 
   onMount(() => {
+    config.onExternalChange = () => feed.refresh();
     (async () => {
-      await config.load();
+      await config.init();
       await feed.refresh();
+      if (!(await isPermissionGranted())) await requestPermission();
     })();
     const t = setInterval(() => (now = new Date()), 30_000);
     return () => clearInterval(t);
@@ -37,8 +45,6 @@
 <TitleBar onsettings={() => (settingsOpen = true)} />
 
 <main class="scroll">
-  <div class="glow" aria-hidden="true"></div>
-
   <div class="page">
     <header class="hero" in:fly={{ y: 16, duration: 520, easing: cubicOut }}>
       <p class="greet">{greeting(now)}{config.data.brief.greetingName ? ` ${config.data.brief.greetingName}` : ""}.</p>
@@ -77,6 +83,10 @@
   <Diaporama />
 {/if}
 
+{#if reader.open}
+  <Reader />
+{/if}
+
 <Settings bind:open={settingsOpen} />
 
 <style>
@@ -87,29 +97,12 @@
     background: var(--paper);
   }
 
-  .glow {
-    position: fixed;
-    top: -260px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 920px;
-    height: 620px;
-    pointer-events: none;
-    background: radial-gradient(
-      55% 60% at 50% 30%,
-      rgba(255, 182, 56, 0.22) 0%,
-      rgba(255, 141, 107, 0.12) 38%,
-      rgba(247, 246, 242, 0) 72%
-    );
-    z-index: 0;
-  }
-
   .page {
     position: relative;
     z-index: 1;
     max-width: 900px;
     margin: 0 auto;
-    padding: 8px 28px 72px;
+    padding: 60px 28px 72px;
   }
 
   .hero {
@@ -148,6 +141,10 @@
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 16px;
+  }
+  .grid > div {
+    display: flex;
+    min-width: 0;
   }
 
   @media (max-width: 720px) {

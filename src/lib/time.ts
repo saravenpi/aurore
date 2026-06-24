@@ -17,6 +17,14 @@ export function greeting(d = new Date()): string {
   return "Bonsoir";
 }
 
+export function briefMoment(d = new Date()): string {
+  const h = d.getHours();
+  if (h < 5) return "de la nuit";
+  if (h < 12) return "du matin";
+  if (h < 18) return "de l'après-midi";
+  return "du soir";
+}
+
 export function longDateLabel(d = new Date()): string {
   const s = longDate.format(d);
   return s.charAt(0).toUpperCase() + s.slice(1);

@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { openUrl } from "@tauri-apps/plugin-opener";
   import type { FeedItem } from "$lib/types";
   import { relativeTime } from "$lib/time";
+  import { reader } from "$lib/reader.svelte";
   import SourceChip from "./SourceChip.svelte";
   import ArrowUp from "~icons/solar/arrow-right-up-bold";
 
@@ -13,7 +13,7 @@
   const clickable = $derived(!!item.link);
 
   function open() {
-    if (item.link) openUrl(item.link);
+    if (item.link) reader.show(item);
   }
 
   function onKey(e: KeyboardEvent) {
@@ -28,8 +28,8 @@
   class="card liquid-glass"
   class:clickable
   class:unread={item.unread}
-  role={clickable ? "link" : undefined}
-  tabindex={clickable ? 0 : undefined}
+  role="link"
+  tabindex={clickable ? 0 : -1}
   onclick={clickable ? open : undefined}
   onkeydown={clickable ? onKey : undefined}
 >
@@ -76,10 +76,11 @@
     gap: 16px;
     align-items: flex-start;
     padding: 18px;
+    height: 100%;
     border-radius: var(--r-lg);
     transition:
       transform 0.4s var(--ease-soft),
-      box-shadow 0.4s var(--ease-soft);
+      border-color 0.4s var(--ease-soft);
   }
 
   .card.clickable {
@@ -87,11 +88,8 @@
   }
 
   .card.clickable:hover {
-    transform: translateY(-3px);
-    box-shadow:
-      0 16px 40px rgba(40, 38, 32, 0.2),
-      0 4px 10px rgba(40, 38, 32, 0.12),
-      inset 0 1px 0.5px rgba(255, 255, 255, 0.95);
+    transform: scale(1.02);
+    border-color: var(--accent);
   }
 
   .card.clickable:focus-visible {
@@ -126,7 +124,6 @@
     height: 8px;
     border-radius: var(--r-pill);
     background: var(--accent);
-    box-shadow: 0 0 0 3px var(--accent-soft);
   }
 
   .time {

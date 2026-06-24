@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { fly, fade } from "svelte/transition";
+  import { scale, fade } from "svelte/transition";
   import { cubicOut } from "svelte/easing";
   import { config } from "$lib/config.svelte";
   import { feed } from "$lib/feed.svelte";
@@ -86,24 +86,26 @@
 {#if open}
   <div
     class="backdrop"
-    transition:fade={{ duration: 220 }}
+    transition:fade={{ duration: 200 }}
     onclick={close}
     role="presentation"
-  ></div>
-
-  <aside
-    class="panel liquid-glass scroll"
-    transition:fly={{ x: 420, duration: 380, easing: cubicOut }}
-    aria-label="Réglages"
   >
-    <header class="panel-head">
-      <h2>Réglages</h2>
-      <button class="close" onclick={close} aria-label="Fermer">
-        <CloseCircle style="font-size:30px" />
-      </button>
-    </header>
+    <aside
+      class="panel"
+      transition:scale={{ start: 0.96, duration: 300, easing: cubicOut }}
+      onclick={(e) => e.stopPropagation()}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Réglages"
+    >
+      <header class="panel-head">
+        <h2>Réglages</h2>
+        <button class="close" onclick={close} aria-label="Fermer">
+          <CloseCircle style="font-size:30px" />
+        </button>
+      </header>
 
-    <div class="content">
+      <div class="content scroll">
       {#snippet locIcon()}<MapPoint style="font-size:18px" />{/snippet}
       {#snippet locBody()}
         <div class="row toggle-row">
@@ -264,13 +266,14 @@
       {@render section(briefIcon, "Brief", undefined, briefBody)}
     </div>
 
-    <footer class="panel-foot">
-      <button class="save" onclick={persist} disabled={saving}>
-        <CheckCircle style="font-size:20px" />
-        {saving ? "Enregistrement…" : "Enregistrer"}
-      </button>
-    </footer>
-  </aside>
+      <footer class="panel-foot">
+        <button class="save" onclick={persist} disabled={saving}>
+          <CheckCircle style="font-size:20px" />
+          {saving ? "Enregistrement…" : "Enregistrer"}
+        </button>
+      </footer>
+    </aside>
+  </div>
 {/if}
 
 <style>
@@ -278,21 +281,25 @@
     position: fixed;
     inset: 0;
     z-index: 40;
-    background: rgba(40, 38, 32, 0.28);
-    -webkit-backdrop-filter: blur(2px);
-    backdrop-filter: blur(2px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 32px;
+    background: rgba(247, 246, 242, 0.6);
+    -webkit-backdrop-filter: blur(20px) saturate(120%);
+    backdrop-filter: blur(20px) saturate(120%);
   }
 
   .panel {
-    position: fixed;
-    top: 12px;
-    right: 12px;
-    bottom: 12px;
     z-index: 50;
-    width: min(440px, calc(100vw - 24px));
+    width: min(680px, 92vw);
+    max-height: 86vh;
     display: flex;
     flex-direction: column;
+    overflow: hidden;
     border-radius: var(--r-xl);
+    border: 1px solid var(--hair);
+    background: var(--paper);
   }
 
   .panel-head {
@@ -420,9 +427,7 @@
     border: 1px solid var(--hair);
     background: rgba(255, 255, 255, 0.7);
     outline: none;
-    transition:
-      border-color 0.25s var(--ease-soft),
-      box-shadow 0.25s var(--ease-soft);
+    transition: border-color 0.25s var(--ease-soft);
   }
 
   .input::placeholder {
@@ -431,7 +436,6 @@
 
   .input:focus {
     border-color: var(--accent);
-    box-shadow: 0 0 0 3px var(--accent-soft);
   }
 
   .grow {
@@ -524,7 +528,7 @@
   }
 
   .add:hover {
-    transform: translateY(-1px);
+    transform: scale(1.03);
     background: rgba(255, 158, 69, 0.24);
   }
 
@@ -578,7 +582,7 @@
   }
 
   .switch.on {
-    background: linear-gradient(135deg, var(--dawn-amber), var(--dawn-coral));
+    background: var(--accent);
   }
 
   .knob {
@@ -589,7 +593,6 @@
     height: 21px;
     border-radius: var(--r-pill);
     background: #fff;
-    box-shadow: 0 2px 5px rgba(40, 38, 32, 0.3);
     transition: transform 0.3s var(--ease-soft);
   }
 
@@ -610,24 +613,23 @@
     width: 100%;
     height: 50px;
     border-radius: var(--r-pill);
-    background: linear-gradient(135deg, var(--dawn-amber), var(--dawn-coral));
+    background: var(--dawn-amber);
     color: #fff;
     font-family: "Goga", sans-serif;
     font-weight: 700;
     font-size: 0.98rem;
-    box-shadow: 0 10px 24px rgba(255, 141, 107, 0.35);
     transition:
       transform 0.3s var(--ease-soft),
       filter 0.3s var(--ease-soft);
   }
 
   .save:hover:not(:disabled) {
-    transform: translateY(-2px);
+    transform: scale(1.03);
     filter: brightness(1.05);
   }
 
   .save:active:not(:disabled) {
-    transform: translateY(0) scale(0.985);
+    transform: scale(0.97);
   }
 
   .save:disabled {

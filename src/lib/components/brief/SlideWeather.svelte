@@ -63,28 +63,28 @@
     </div>
 
     <div class="stats" in:fly={{ y: 22, duration: 520, delay: 200, easing: cubicOut }}>
-      <div class="pill liquid-glass-dark">
+      <div class="pill">
         <Temperature style="font-size:22px" />
         <div class="pill-body">
           <span class="pill-k">Ressenti</span>
           <span class="pill-v">{Math.round(w.now.feelsLikeC)}°</span>
         </div>
       </div>
-      <div class="pill liquid-glass-dark">
+      <div class="pill">
         <Wind style="font-size:22px" />
         <div class="pill-body">
           <span class="pill-k">Vent</span>
           <span class="pill-v">{Math.round(w.now.windKmh)} km/h</span>
         </div>
       </div>
-      <div class="pill liquid-glass-dark">
+      <div class="pill">
         <Waterdrop style="font-size:22px" />
         <div class="pill-body">
           <span class="pill-k">Humidité</span>
           <span class="pill-v">{w.now.humidity}%</span>
         </div>
       </div>
-      <div class="pill liquid-glass-dark">
+      <div class="pill">
         <Sunrise style="font-size:22px" />
         <div class="pill-body">
           <span class="pill-k">Aujourd'hui</span>
@@ -100,7 +100,7 @@
       >
         {#each hours as h (h.time)}
           {@const HIcon = iconFor(h.code, w.now.isDay)}
-          <div class="hour liquid-glass-dark">
+          <div class="hour">
             <span class="hour-t">{clockHM(h.time)}</span>
             <HIcon style="font-size:26px" />
             <span class="hour-temp">{Math.round(h.tempC)}°</span>
@@ -134,15 +134,14 @@
   }
 
   .hero-icon {
-    color: var(--dawn-gold);
-    filter: drop-shadow(0 10px 30px rgba(255, 182, 56, 0.4));
+    color: var(--accent);
     animation: float-soft 6s var(--ease-soft) infinite;
   }
 
   .hero-text {
     display: flex;
     flex-direction: column;
-    color: #fff;
+    color: var(--ink);
   }
 
   .temp {
@@ -150,11 +149,10 @@
     font-size: clamp(64px, 11vw, 108px);
     line-height: 0.9;
     letter-spacing: -0.03em;
-    text-shadow: 0 4px 30px rgba(20, 16, 40, 0.3);
   }
 
   .deg {
-    color: var(--dawn-gold);
+    color: var(--accent);
   }
 
   .label {
@@ -165,7 +163,7 @@
 
   .place {
     font-size: 16px;
-    color: rgba(255, 255, 255, 0.7);
+    color: var(--ink-soft);
   }
 
   .stats {
@@ -181,7 +179,13 @@
     gap: 12px;
     padding: 12px 20px;
     border-radius: var(--r-pill);
-    color: #fff;
+    background: #fff;
+    border: 1px solid var(--hair);
+    color: var(--ink);
+  }
+
+  .pill :global(svg) {
+    color: var(--accent);
   }
 
   .pill-body {
@@ -192,7 +196,7 @@
 
   .pill-k {
     font-size: 12px;
-    color: rgba(255, 255, 255, 0.66);
+    color: var(--ink-soft);
   }
 
   .pill-v {
@@ -215,14 +219,20 @@
     gap: 8px;
     min-width: 76px;
     padding: 14px 12px;
-    border-radius: var(--r-lg);
-    color: #fff;
+    border-radius: var(--r-md);
+    background: #fff;
+    border: 1px solid var(--hair);
+    color: var(--ink);
     flex: 0 0 auto;
+  }
+
+  .hour :global(svg) {
+    color: var(--accent);
   }
 
   .hour-t {
     font-size: 13px;
-    color: rgba(255, 255, 255, 0.72);
+    color: var(--ink-soft);
   }
 
   .hour-temp {
@@ -235,7 +245,11 @@
     flex-direction: column;
     align-items: center;
     gap: 16px;
-    color: rgba(255, 255, 255, 0.82);
+    color: var(--ink);
+  }
+
+  .empty :global(svg) {
+    color: var(--accent);
   }
 
   .empty p {

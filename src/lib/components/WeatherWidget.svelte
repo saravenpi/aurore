@@ -111,7 +111,6 @@
     align-items: center;
     justify-content: center;
     color: var(--accent-ink);
-    filter: drop-shadow(0 6px 14px rgba(255, 158, 69, 0.3));
     animation: float-soft 6s var(--ease-soft) infinite;
   }
 

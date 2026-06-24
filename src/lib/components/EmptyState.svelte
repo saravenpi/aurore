@@ -30,7 +30,6 @@
 
   .icon {
     color: var(--dawn-amber);
-    filter: drop-shadow(0 6px 16px rgba(255, 182, 56, 0.3));
   }
 
   .icon.pulse {
@@ -50,16 +49,7 @@
   }
 
   .shimmer-text {
-    background: linear-gradient(
-      90deg,
-      var(--ink-soft) 25%,
-      var(--accent) 50%,
-      var(--ink-soft) 75%
-    );
-    background-size: 200% 100%;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    animation: shimmer 2.4s linear infinite;
+    color: var(--ink-soft);
+    animation: float-soft 3.2s var(--ease-soft) infinite;
   }
 </style>

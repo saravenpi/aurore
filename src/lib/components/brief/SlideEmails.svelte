@@ -32,7 +32,7 @@
   <div class="list scroll">
     {#each items as item, i (item.id)}
       <article
-        class="row liquid-glass-dark"
+        class="row"
         in:fly={{ y: 24, duration: 460, delay: 140 + i * 80, easing: cubicOut }}
       >
         <div class="avatar" class:unread={item.unread}>{initial(item)}</div>
@@ -65,11 +65,11 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    color: #fff;
+    color: var(--ink);
   }
 
   .head-icon {
-    color: var(--dawn-gold);
+    color: var(--accent);
     display: inline-flex;
   }
 
@@ -83,7 +83,8 @@
     margin-left: auto;
     padding: 6px 14px;
     border-radius: var(--r-pill);
-    background: rgba(255, 158, 69, 0.32);
+    background: var(--accent-soft);
+    color: var(--accent-ink);
     font-size: 13px;
     font-weight: 500;
   }
@@ -102,7 +103,9 @@
     gap: 16px;
     padding: 14px 18px;
     border-radius: var(--r-lg);
-    color: #fff;
+    background: #fff;
+    border: 1px solid var(--hair);
+    color: var(--ink);
   }
 
   .avatar {
@@ -114,12 +117,13 @@
     place-items: center;
     font-size: 18px;
     font-weight: 700;
-    background: rgba(255, 255, 255, 0.18);
+    background: var(--accent-soft);
+    color: var(--accent-ink);
   }
 
   .avatar.unread {
-    background: linear-gradient(135deg, var(--dawn-amber), var(--dawn-coral));
-    color: #43413b;
+    background: var(--accent-soft);
+    color: var(--accent-ink);
   }
 
   .body {
@@ -148,12 +152,12 @@
     margin-left: auto;
     flex: 0 0 auto;
     font-size: 12px;
-    color: rgba(255, 255, 255, 0.62);
+    color: var(--ink-soft);
   }
 
   .subject {
     font-size: 14px;
-    color: rgba(255, 255, 255, 0.82);
+    color: var(--ink-soft);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;

@@ -23,34 +23,26 @@
     min-height: 64px;
     padding: 12px 26px;
     border-radius: var(--r-pill);
-    background: linear-gradient(135deg, var(--dawn-amber), var(--dawn-coral));
+    background: var(--dawn-amber);
     color: #fff;
     text-align: left;
-    box-shadow:
-      0 12px 30px rgba(255, 141, 107, 0.4),
-      inset 0 1px 1px rgba(255, 255, 255, 0.4);
     transition:
       transform 0.35s var(--ease-soft),
-      box-shadow 0.35s var(--ease-soft),
       filter 0.35s var(--ease-soft);
   }
 
   .cta:hover {
-    transform: translateY(-3px);
-    filter: brightness(1.05);
-    box-shadow:
-      0 20px 44px rgba(255, 141, 107, 0.5),
-      inset 0 1px 1px rgba(255, 255, 255, 0.5);
+    transform: scale(1.03);
+    filter: brightness(1.04);
   }
 
   .cta:active {
-    transform: translateY(-1px) scale(0.985);
+    transform: scale(0.97);
   }
 
   .icon {
     display: inline-flex;
     align-items: center;
-    filter: drop-shadow(0 2px 6px rgba(40, 38, 32, 0.25));
   }
 
   .text {

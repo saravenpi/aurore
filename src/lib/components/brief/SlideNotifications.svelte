@@ -19,7 +19,7 @@
   <div class="list scroll">
     {#each items as item, i (item.id)}
       <article
-        class="row liquid-glass-dark"
+        class="row"
         in:fly={{ y: 24, duration: 460, delay: 140 + i * 80, easing: cubicOut }}
       >
         <div class="top">
@@ -52,11 +52,11 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    color: #fff;
+    color: var(--ink);
   }
 
   .head-icon {
-    color: var(--dawn-gold);
+    color: var(--accent);
     display: inline-flex;
   }
 
@@ -80,7 +80,9 @@
     gap: 8px;
     padding: 16px 20px;
     border-radius: var(--r-lg);
-    color: #fff;
+    background: #fff;
+    border: 1px solid var(--hair);
+    color: var(--ink);
   }
 
   .top {
@@ -92,7 +94,8 @@
   .chip {
     padding: 4px 12px;
     border-radius: var(--r-pill);
-    background: rgba(177, 150, 232, 0.34);
+    background: var(--accent-soft);
+    color: var(--accent-ink);
     font-size: 12px;
     font-weight: 500;
   }
@@ -100,7 +103,7 @@
   .time {
     margin-left: auto;
     font-size: 12px;
-    color: rgba(255, 255, 255, 0.62);
+    color: var(--ink-soft);
   }
 
   .title {
@@ -117,7 +120,7 @@
   .summary {
     font-size: 14px;
     line-height: 1.45;
-    color: rgba(255, 255, 255, 0.78);
+    color: var(--ink-soft);
     display: -webkit-box;
     -webkit-line-clamp: 3;
     line-clamp: 3;

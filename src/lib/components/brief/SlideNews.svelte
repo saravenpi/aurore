@@ -19,7 +19,7 @@
   <div class="list scroll">
     {#each items as item, i (item.id)}
       <article
-        class="card liquid-glass-dark"
+        class="card"
         in:fly={{ y: 26, duration: 480, delay: 140 + i * 90, easing: cubicOut }}
       >
         <div class="body">
@@ -59,11 +59,11 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    color: #fff;
+    color: var(--ink);
   }
 
   .head-icon {
-    color: var(--dawn-gold);
+    color: var(--accent);
     display: inline-flex;
   }
 
@@ -86,7 +86,9 @@
     gap: 16px;
     padding: 18px 20px;
     border-radius: var(--r-lg);
-    color: #fff;
+    background: #fff;
+    border: 1px solid var(--hair);
+    color: var(--ink);
   }
 
   .body {
@@ -106,14 +108,15 @@
   .chip {
     padding: 4px 12px;
     border-radius: var(--r-pill);
-    background: rgba(255, 255, 255, 0.16);
+    background: var(--accent-soft);
+    color: var(--accent-ink);
     font-size: 12px;
     font-weight: 500;
   }
 
   .time {
     font-size: 12px;
-    color: rgba(255, 255, 255, 0.64);
+    color: var(--ink-soft);
   }
 
   .title {
@@ -130,7 +133,7 @@
   .summary {
     font-size: 14px;
     line-height: 1.45;
-    color: rgba(255, 255, 255, 0.78);
+    color: var(--ink-soft);
     display: -webkit-box;
     -webkit-line-clamp: 2;
     line-clamp: 2;

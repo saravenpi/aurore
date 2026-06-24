@@ -42,17 +42,11 @@
   --accent-ink: #b25e16;
   --accent-soft: rgba(255, 158, 69, 0.16);
 
-  /* Sky gradients used by brief slides */
-  --sky-dawn: linear-gradient(
-    180deg,
-    #2c2c5a 0%,
-    #6a5a9a 32%,
-    #d98a8a 62%,
-    #ffc06b 86%,
-    #ffe7a8 100%
-  );
-  --sky-warm: linear-gradient(170deg, #fff4e0 0%, #ffe9d2 50%, #ffdfc4 100%);
-  --sky-soft: linear-gradient(165deg, #fbf7ef 0%, #f5efe4 100%);
+  /* Flat surface tints (no gradients) */
+  --sky-dawn: var(--paper);
+  --sky-warm: #fdf6ec;
+  --sky-soft: #f5efe4;
+  --card: #ffffff;
 
   /* Radius scale — no straight corners, ever */
   --r-pill: 999px;
@@ -76,64 +70,22 @@
   text-rendering: optimizeLegibility;
 }
 
-/* Liquid Glass material (Tableau) */
+/* Clean glass material — translucent blur, hairline border, no shadow, no gradient */
 .liquid-glass {
   position: relative;
   isolation: isolate;
-  background: var(--glass-tint);
+  background: rgba(255, 255, 255, 0.66);
   -webkit-backdrop-filter: var(--glass-blur);
   backdrop-filter: var(--glass-blur);
-  border: 1px solid rgba(255, 255, 255, 0.55);
-  box-shadow:
-    0 8px 30px rgba(40, 38, 32, 0.16),
-    0 2px 6px rgba(40, 38, 32, 0.1),
-    inset 0 1px 0.5px rgba(255, 255, 255, 0.95),
-    inset 0 8px 16px -10px rgba(255, 255, 255, 0.6),
-    inset 0 -8px 16px -10px rgba(255, 255, 255, 0.28);
-}
-.liquid-glass::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  border-radius: inherit;
-  pointer-events: none;
-  background: linear-gradient(
-    150deg,
-    rgba(255, 255, 255, 0.5) 0%,
-    rgba(255, 255, 255, 0.12) 40%,
-    rgba(255, 255, 255, 0) 64%
-  );
+  border: 1px solid var(--hair);
 }
 
-/* Dark liquid glass — for cards floating over dawn-sky slides */
 .liquid-glass-dark {
   position: relative;
   isolation: isolate;
-  background: var(--glass-tint-dark);
-  -webkit-backdrop-filter: var(--glass-blur-dark);
-  backdrop-filter: var(--glass-blur-dark);
-  border: 1px solid rgba(255, 255, 255, 0.28);
-  box-shadow:
-    0 18px 50px rgba(20, 16, 40, 0.32),
-    inset 0 1px 0.5px rgba(255, 255, 255, 0.5),
-    inset 0 10px 20px -14px rgba(255, 255, 255, 0.55),
-    inset 0 -10px 20px -14px rgba(255, 255, 255, 0.14);
-  color: #fff;
-}
-.liquid-glass-dark::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  border-radius: inherit;
-  pointer-events: none;
-  background: linear-gradient(
-    150deg,
-    rgba(255, 255, 255, 0.34) 0%,
-    rgba(255, 255, 255, 0.08) 42%,
-    rgba(255, 255, 255, 0) 66%
-  );
+  background: var(--card);
+  border: 1px solid var(--hair);
+  color: var(--ink);
 }
 
 @media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
@@ -142,26 +94,12 @@
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
   }
-  .liquid-glass::after {
-    display: none;
-  }
-  .liquid-glass-dark {
-    background: rgba(40, 36, 60, 0.92);
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-  }
-  .liquid-glass-dark::after {
-    display: none;
-  }
 }
 @supports not (
   (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))
 ) {
   .liquid-glass {
     background: rgba(255, 255, 255, 0.95);
-  }
-  .liquid-glass-dark {
-    background: rgba(40, 36, 60, 0.9);
   }
 }
 

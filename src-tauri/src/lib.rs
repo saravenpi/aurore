@@ -1,6 +1,10 @@
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use std::collections::HashMap;
 use std::path::PathBuf;
+use std::sync::{Mutex, OnceLock};
+use notify::Watcher;
+use tauri::Emitter;
 
 #[derive(Serialize, Deserialize, Clone, Default)]
 #[serde(rename_all = "camelCase")]
@@ -59,19 +63,40 @@ struct Weather {
     daily: Vec<WeatherDay>,
 }
 
+fn default_true() -> bool {
+    true
+}
+fn default_port() -> u16 {
+    993
+}
+fn default_ntfy() -> String {
+    "https://ntfy.sh".into()
+}
+fn default_slide_seconds() -> f64 {
+    8.0
+}
+fn default_news_per_slide() -> f64 {
+    4.0
+}
+fn default_max_news_slides() -> f64 {
+    3.0
+}
+
 #[derive(Serialize, Deserialize, Clone, Default)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase", default)]
 struct FeedSourceConfig {
     name: String,
     url: String,
+    #[serde(default = "default_true")]
     enabled: bool,
 }
 
 #[derive(Serialize, Deserialize, Clone, Default)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase", default)]
 struct EmailConfig {
     enabled: bool,
     host: String,
+    #[serde(default = "default_port")]
     port: u16,
     username: String,
     password: String,
@@ -79,16 +104,18 @@ struct EmailConfig {
 }
 
 #[derive(Serialize, Deserialize, Clone, Default)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase", default)]
 struct NotificationsConfig {
     enabled: bool,
+    #[serde(default = "default_ntfy")]
     ntfy_server: String,
     topics: Vec<String>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Default)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase", default)]
 struct LocationConfig {
+    #[serde(default = "default_true")]
     auto: bool,
     place: String,
     lat: f64,
@@ -96,16 +123,19 @@ struct LocationConfig {
 }
 
 #[derive(Serialize, Deserialize, Clone, Default)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase", default)]
 struct BriefConfig {
+    #[serde(default = "default_slide_seconds")]
     slide_seconds: f64,
     greeting_name: String,
+    #[serde(default = "default_news_per_slide")]
     news_per_slide: f64,
+    #[serde(default = "default_max_news_slides")]
     max_news_slides: f64,
 }
 
 #[derive(Serialize, Deserialize, Clone, Default)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase", default)]
 struct Config {
     location: LocationConfig,
     feeds: Vec<FeedSourceConfig>,
@@ -115,8 +145,13 @@ struct Config {
 }
 
 fn config_path() -> Result<PathBuf, String> {
-    let dir = dirs::config_dir().ok_or_else(|| "no config dir".to_string())?;
-    Ok(dir.join("aurore").join("config.json"))
+    let dir = dirs::home_dir().ok_or_else(|| "no home dir".to_string())?;
+    Ok(dir.join(".aurore.yml"))
+}
+
+fn last_seen() -> &'static Mutex<String> {
+    static LAST_SEEN: OnceLock<Mutex<String>> = OnceLock::new();
+    LAST_SEEN.get_or_init(|| Mutex::new(String::new()))
 }
 
 #[tauri::command]
@@ -126,17 +161,33 @@ fn load_config() -> Result<Config, String> {
         return Err("no config".into());
     }
     let data = std::fs::read_to_string(&path).map_err(|e| e.to_string())?;
-    serde_json::from_str(&data).map_err(|e| e.to_string())
+    if let Ok(mut guard) = last_seen().lock() {
+        *guard = data.clone();
+    }
+    serde_yaml::from_str(&data).map_err(|e| e.to_string())
 }
 
 #[tauri::command]
 fn save_config(config: Config) -> Result<(), String> {
     let path = config_path()?;
-    if let Some(parent) = path.parent() {
-        std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
+    let data = serde_yaml::to_string(&config).map_err(|e| e.to_string())?;
+    if let Ok(mut guard) = last_seen().lock() {
+        *guard = data.clone();
     }
-    let data = serde_json::to_string_pretty(&config).map_err(|e| e.to_string())?;
     std::fs::write(&path, data).map_err(|e| e.to_string())
+}
+
+fn read_config_if_changed() -> Option<Config> {
+    let path = config_path().ok()?;
+    let data = std::fs::read_to_string(&path).ok()?;
+    {
+        let mut guard = last_seen().lock().ok()?;
+        if *guard == data {
+            return None;
+        }
+        *guard = data.clone();
+    }
+    serde_yaml::from_str(&data).ok()
 }
 
 fn client() -> Result<reqwest::Client, String> {
@@ -144,6 +195,76 @@ fn client() -> Result<reqwest::Client, String> {
         .user_agent("Aurore/0.1")
         .build()
         .map_err(|e| e.to_string())
+}
+
+fn yt_cache() -> &'static Mutex<HashMap<String, String>> {
+    static C: OnceLock<Mutex<HashMap<String, String>>> = OnceLock::new();
+    C.get_or_init(|| Mutex::new(HashMap::new()))
+}
+
+fn extract_channel_id(html: &str) -> Option<String> {
+    for key in ["\"channelId\":\"", "\"externalId\":\"", "channel_id="] {
+        if let Some(i) = html.find(key) {
+            let rest = &html[i + key.len()..];
+            let id: String = rest
+                .chars()
+                .take_while(|c| c.is_alphanumeric() || *c == '_' || *c == '-')
+                .collect();
+            if id.starts_with("UC") && id.len() >= 20 {
+                return Some(id);
+            }
+        }
+    }
+    None
+}
+
+async fn resolve_feed_url(cl: &reqwest::Client, url: &str) -> String {
+    let lower = url.to_lowercase();
+    if !(lower.contains("youtube.com") || lower.contains("youtu.be")) {
+        return url.to_string();
+    }
+    if lower.contains("/feeds/videos.xml") {
+        return url.to_string();
+    }
+    if let Some(idx) = url.find("/channel/") {
+        let id: String = url[idx + 9..]
+            .chars()
+            .take_while(|c| c.is_alphanumeric() || *c == '_' || *c == '-')
+            .collect();
+        if id.starts_with("UC") {
+            return format!(
+                "https://www.youtube.com/feeds/videos.xml?channel_id={}",
+                id
+            );
+        }
+    }
+    if let Some(hit) = yt_cache().lock().ok().and_then(|m| m.get(url).cloned()) {
+        return hit;
+    }
+    let html = match cl.get(url).send().await {
+        Ok(r) => r.text().await.unwrap_or_default(),
+        Err(_) => return url.to_string(),
+    };
+    match extract_channel_id(&html) {
+        Some(id) => {
+            let feed = format!(
+                "https://www.youtube.com/feeds/videos.xml?channel_id={}",
+                id
+            );
+            if let Ok(mut m) = yt_cache().lock() {
+                m.insert(url.to_string(), feed.clone());
+            }
+            feed
+        }
+        None => url.to_string(),
+    }
+}
+
+#[tauri::command]
+async fn fetch_url(url: String) -> Result<String, String> {
+    let cl = client()?;
+    let resp = cl.get(&url).send().await.map_err(|e| e.to_string())?;
+    resp.text().await.map_err(|e| e.to_string())
 }
 
 fn strip_html(input: &str) -> String {
@@ -283,7 +404,8 @@ async fn fetch_feeds(sources: Vec<FeedSourceConfig>) -> Result<Vec<FeedItem>, St
     let cl = client()?;
     let mut items: Vec<FeedItem> = Vec::new();
     for source in sources.into_iter().filter(|s| s.enabled) {
-        let resp = match cl.get(&source.url).send().await {
+        let url = resolve_feed_url(&cl, &source.url).await;
+        let resp = match cl.get(&url).send().await {
             Ok(r) => r,
             Err(_) => continue,
         };
@@ -539,13 +661,50 @@ async fn fetch_notifications(config: NotificationsConfig) -> Result<Vec<FeedItem
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_notification::init())
+        .setup(|app| {
+            let handle = app.handle().clone();
+            if let Some(home) = dirs::home_dir() {
+                std::thread::spawn(move || {
+                    let h = handle.clone();
+                    let mut watcher = match notify::recommended_watcher(
+                        move |res: notify::Result<notify::Event>| {
+                            if let Ok(ev) = res {
+                                let hit = ev.paths.iter().any(|p| {
+                                    p.file_name().and_then(|f| f.to_str()) == Some(".aurore.yml")
+                                });
+                                if hit {
+                                    if let Some(cfg) = read_config_if_changed() {
+                                        let _ = h.emit("config-changed", cfg);
+                                    }
+                                }
+                            }
+                        },
+                    ) {
+                        Ok(w) => w,
+                        Err(_) => return,
+                    };
+                    if watcher
+                        .watch(&home, notify::RecursiveMode::NonRecursive)
+                        .is_err()
+                    {
+                        return;
+                    }
+                    loop {
+                        std::thread::park();
+                    }
+                });
+            }
+            Ok(())
+        })
         .invoke_handler(tauri::generate_handler![
             load_config,
             save_config,
             fetch_weather,
             fetch_feeds,
             fetch_emails,
-            fetch_notifications
+            fetch_notifications,
+            fetch_url
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
