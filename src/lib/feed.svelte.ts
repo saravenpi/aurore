@@ -88,7 +88,13 @@ class FeedStore {
 
     try {
       const results = await Promise.all(tasks);
-      const all = results.flat();
+      const raw = results.flat();
+      const byId = new Map<string, FeedItem>();
+      for (const it of raw) {
+        const key = it.id || it.link || `${it.sourceName}:${it.title}`;
+        if (!byId.has(key)) byId.set(key, { ...it, id: key });
+      }
+      const all = [...byId.values()];
       all.sort(
         (a, b) =>
           (b.published ? Date.parse(b.published) : 0) -

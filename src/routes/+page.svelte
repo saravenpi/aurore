@@ -138,9 +138,9 @@
   }
 
   .grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
   }
   .grid > div {
     display: flex;
@@ -148,9 +148,6 @@
   }
 
   @media (max-width: 720px) {
-    .grid {
-      grid-template-columns: 1fr;
-    }
     .greet {
       font-size: 2rem;
     }

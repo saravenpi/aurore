@@ -76,7 +76,7 @@
     gap: 16px;
     align-items: flex-start;
     padding: 18px;
-    height: 100%;
+    width: 100%;
     border-radius: var(--r-lg);
     transition:
       transform 0.4s var(--ease-soft),

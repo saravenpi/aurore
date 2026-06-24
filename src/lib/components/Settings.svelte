@@ -2,7 +2,6 @@
   import { scale, fade } from "svelte/transition";
   import { cubicOut } from "svelte/easing";
   import { config } from "$lib/config.svelte";
-  import { feed } from "$lib/feed.svelte";
   import type { Snippet } from "svelte";
 
   import CloseCircle from "~icons/solar/close-circle-bold-duotone";
@@ -13,27 +12,14 @@
   import Letter from "~icons/solar/letter-bold-duotone";
   import Bell from "~icons/solar/bell-bold-duotone";
   import Play from "~icons/solar/play-bold";
-  import CheckCircle from "~icons/solar/check-circle-bold-duotone";
 
   let { open = $bindable(false) }: { open?: boolean } = $props();
-
-  let saving = $state(false);
 
   const c = $derived(config.data);
 
   async function close() {
     await config.save();
     open = false;
-  }
-
-  async function persist() {
-    saving = true;
-    try {
-      await config.save();
-      await feed.refresh();
-    } finally {
-      saving = false;
-    }
   }
 
   function addFeed() {
@@ -192,10 +178,6 @@
             <span class="field-label">Mot de passe</span>
             <input class="input" type="password" bind:value={config.data.email.password} />
           </label>
-          <label class="field">
-            <span class="field-label">Dossier</span>
-            <input class="input" type="text" bind:value={config.data.email.mailbox} placeholder="INBOX" />
-          </label>
         {/if}
       {/snippet}
       {@render section(mailIcon, "Mail", undefined, mailBody)}
@@ -265,13 +247,6 @@
       {/snippet}
       {@render section(briefIcon, "Brief", undefined, briefBody)}
     </div>
-
-      <footer class="panel-foot">
-        <button class="save" onclick={persist} disabled={saving}>
-          <CheckCircle style="font-size:20px" />
-          {saving ? "Enregistrement…" : "Enregistrer"}
-        </button>
-      </footer>
     </aside>
   </div>
 {/if}
@@ -337,7 +312,7 @@
     padding: 4px 22px 22px;
     display: flex;
     flex-direction: column;
-    gap: 14px;
+    gap: 30px;
   }
 
   .content::-webkit-scrollbar {
@@ -348,9 +323,6 @@
     display: flex;
     flex-direction: column;
     gap: 12px;
-    padding: 18px;
-    border-radius: var(--r-lg);
-    background: rgba(255, 255, 255, 0.42);
   }
 
   .block-head {
@@ -597,42 +569,5 @@
 
   .switch.on .knob {
     transform: translateX(19px);
-  }
-
-  .panel-foot {
-    padding: 14px 22px 20px;
-    border-top: 1px solid var(--hair);
-  }
-
-  .save {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    width: 100%;
-    height: 50px;
-    border-radius: var(--r-pill);
-    background: var(--dawn-amber);
-    color: #fff;
-    font-family: "Goga", sans-serif;
-    font-weight: 700;
-    font-size: 0.98rem;
-    transition:
-      transform 0.3s var(--ease-soft),
-      filter 0.3s var(--ease-soft);
-  }
-
-  .save:hover:not(:disabled) {
-    transform: scale(1.03);
-    filter: brightness(1.05);
-  }
-
-  .save:active:not(:disabled) {
-    transform: scale(0.97);
-  }
-
-  .save:disabled {
-    opacity: 0.7;
-    cursor: default;
   }
 </style>

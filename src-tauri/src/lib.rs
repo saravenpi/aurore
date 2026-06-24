@@ -73,6 +73,9 @@ fn default_port() -> u16 {
 fn default_ntfy() -> String {
     "https://ntfy.sh".into()
 }
+fn default_mailbox() -> String {
+    "INBOX".into()
+}
 fn default_slide_seconds() -> f64 {
     8.0
 }
@@ -101,6 +104,7 @@ struct EmailConfig {
     port: u16,
     username: String,
     password: String,
+    #[serde(default = "default_mailbox")]
     mailbox: String,
 }
 
@@ -193,7 +197,7 @@ fn read_config_if_changed() -> Option<Config> {
 
 fn client() -> Result<reqwest::Client, String> {
     reqwest::Client::builder()
-        .user_agent("Aurore/0.1")
+        .user_agent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15")
         .timeout(Duration::from_secs(15))
         .connect_timeout(Duration::from_secs(6))
         .build()
@@ -410,7 +414,15 @@ async fn fetch_weather(lat: f64, lon: f64, auto: bool) -> Result<Weather, String
 
 async fn fetch_one_feed(cl: &reqwest::Client, source: &FeedSourceConfig) -> Vec<FeedItem> {
     let url = resolve_feed_url(cl, &source.url).await;
-    let resp = match cl.get(&url).send().await {
+    let resp = match cl
+        .get(&url)
+        .header(
+            "Accept",
+            "application/rss+xml, application/atom+xml, application/xml, text/xml, */*",
+        )
+        .send()
+        .await
+    {
         Ok(r) => r,
         Err(_) => return Vec::new(),
     };
