@@ -52,19 +52,6 @@
         {#if item.published}
           <time class="time">{relativeTime(item.published)}</time>
         {/if}
-        <button
-          class="like"
-          class:on={liked}
-          onclick={like}
-          aria-label={liked ? "Retirer des aimés" : "Aimer"}
-          title={liked ? "Retirer des aimés" : "Aimer"}
-        >
-          {#if liked}
-            <HeartFilled style="font-size:18px" />
-          {:else}
-            <HeartOutline style="font-size:18px" />
-          {/if}
-        </button>
       </div>
     </div>
 
@@ -73,6 +60,22 @@
     {#if item.summary}
       <p class="summary">{item.summary}</p>
     {/if}
+
+    <div class="footer">
+      <button
+        class="like"
+        class:on={liked}
+        onclick={like}
+        aria-label={liked ? "Retirer des aimés" : "Aimer"}
+        title={liked ? "Retirer des aimés" : "Aimer"}
+      >
+        {#if liked}
+          <HeartFilled style="font-size:18px" />
+        {:else}
+          <HeartOutline style="font-size:18px" />
+        {/if}
+      </button>
+    </div>
   </div>
 
   {#if showImage}
@@ -127,6 +130,13 @@
     display: flex;
     flex-direction: column;
     gap: 8px;
+  }
+
+  .footer {
+    margin-top: 4px;
+    margin-left: -6px;
+    display: flex;
+    align-items: center;
   }
 
   .top {
