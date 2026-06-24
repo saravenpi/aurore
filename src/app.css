@@ -1,0 +1,241 @@
+@font-face {
+  font-family: "Goga";
+  src: url("/fonts/Goga-Regular.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Goga";
+  src: url("/fonts/Goga-Medium.otf") format("opentype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Goga";
+  src: url("/fonts/Goga-Bold.otf") format("opentype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  /* Tableau base palette */
+  --paper: #f7f6f2;
+  --dot: rgba(40, 38, 32, 0.13);
+  --ink: #43413b;
+  --ink-soft: #8a877e;
+  --ink-faint: rgba(67, 65, 59, 0.4);
+  --hair: rgba(40, 38, 32, 0.1);
+
+  /* Dawn / Aurore accent palette */
+  --dawn-gold: #ffe07a;
+  --dawn-amber: #ffb638;
+  --dawn-coral: #ff8d6b;
+  --dawn-rose: #ff7a9c;
+  --dawn-lilac: #b196e8;
+  --dawn-indigo: #4b4a82;
+  --accent: #ff9e45;
+  --accent-ink: #b25e16;
+  --accent-soft: rgba(255, 158, 69, 0.16);
+
+  /* Sky gradients used by brief slides */
+  --sky-dawn: linear-gradient(
+    180deg,
+    #2c2c5a 0%,
+    #6a5a9a 32%,
+    #d98a8a 62%,
+    #ffc06b 86%,
+    #ffe7a8 100%
+  );
+  --sky-warm: linear-gradient(170deg, #fff4e0 0%, #ffe9d2 50%, #ffdfc4 100%);
+  --sky-soft: linear-gradient(165deg, #fbf7ef 0%, #f5efe4 100%);
+
+  /* Radius scale — no straight corners, ever */
+  --r-pill: 999px;
+  --r-sm: 12px;
+  --r-md: 18px;
+  --r-lg: 26px;
+  --r-xl: 34px;
+
+  --grid-size: 26px;
+
+  --ease-soft: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+
+  --glass-tint: rgba(255, 255, 255, 0.5);
+  --glass-blur: blur(16px) saturate(185%) brightness(1.06);
+  --glass-tint-dark: rgba(28, 26, 40, 0.32);
+  --glass-blur-dark: blur(18px) saturate(160%) brightness(1.04);
+
+  font-family: "Goga", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Liquid Glass material (Tableau) */
+.liquid-glass {
+  position: relative;
+  isolation: isolate;
+  background: var(--glass-tint);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  box-shadow:
+    0 8px 30px rgba(40, 38, 32, 0.16),
+    0 2px 6px rgba(40, 38, 32, 0.1),
+    inset 0 1px 0.5px rgba(255, 255, 255, 0.95),
+    inset 0 8px 16px -10px rgba(255, 255, 255, 0.6),
+    inset 0 -8px 16px -10px rgba(255, 255, 255, 0.28);
+}
+.liquid-glass::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(
+    150deg,
+    rgba(255, 255, 255, 0.5) 0%,
+    rgba(255, 255, 255, 0.12) 40%,
+    rgba(255, 255, 255, 0) 64%
+  );
+}
+
+/* Dark liquid glass — for cards floating over dawn-sky slides */
+.liquid-glass-dark {
+  position: relative;
+  isolation: isolate;
+  background: var(--glass-tint-dark);
+  -webkit-backdrop-filter: var(--glass-blur-dark);
+  backdrop-filter: var(--glass-blur-dark);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  box-shadow:
+    0 18px 50px rgba(20, 16, 40, 0.32),
+    inset 0 1px 0.5px rgba(255, 255, 255, 0.5),
+    inset 0 10px 20px -14px rgba(255, 255, 255, 0.55),
+    inset 0 -10px 20px -14px rgba(255, 255, 255, 0.14);
+  color: #fff;
+}
+.liquid-glass-dark::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(
+    150deg,
+    rgba(255, 255, 255, 0.34) 0%,
+    rgba(255, 255, 255, 0.08) 42%,
+    rgba(255, 255, 255, 0) 66%
+  );
+}
+
+@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
+  .liquid-glass {
+    background: rgba(255, 255, 255, 0.96);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  .liquid-glass::after {
+    display: none;
+  }
+  .liquid-glass-dark {
+    background: rgba(40, 36, 60, 0.92);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  .liquid-glass-dark::after {
+    display: none;
+  }
+}
+@supports not (
+  (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))
+) {
+  .liquid-glass {
+    background: rgba(255, 255, 255, 0.95);
+  }
+  .liquid-glass-dark {
+    background: rgba(40, 36, 60, 0.9);
+  }
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--paper);
+  color: var(--ink);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+::-webkit-scrollbar {
+  display: none;
+}
+
+.scroll {
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+button {
+  font-family: inherit;
+  color: inherit;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.6);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes float-soft {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}

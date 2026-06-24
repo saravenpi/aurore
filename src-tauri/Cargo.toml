@@ -1,0 +1,32 @@
+[package]
+name = "aurore"
+version = "0.1.0"
+description = "Your morning brief, at first light."
+authors = ["saravenpi"]
+edition = "2021"
+
+[lib]
+name = "aurore_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-opener = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+dirs = "5"
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+feed-rs = "2"
+chrono = { version = "0.4", features = ["serde"] }
+imap = "2"
+native-tls = "0.2"
+mailparse = "0.15"
+
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = "s"
+strip = true
