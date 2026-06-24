@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { fly } from "svelte/transition";
+  import { fly, fade } from "svelte/transition";
   import { cubicOut } from "svelte/easing";
 
   function sheetUp(_node: Element, { duration = 520 }: { duration?: number }) {
@@ -72,6 +72,7 @@
 <svelte:window onkeydown={onKeydown} />
 
 {#if current}
+  <div class="scrim" transition:fade={{ duration: 340 }}></div>
   <div
     class="diaporama"
     transition:sheetUp={{ duration: 520 }}
@@ -137,6 +138,15 @@
 {/if}
 
 <style>
+  .scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 99;
+    background: rgba(28, 24, 44, 0.5);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+  }
+
   .diaporama {
     position: fixed;
     inset: 0;
